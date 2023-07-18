@@ -1,10 +1,13 @@
+const fs = require("fs");
+
 class Repository {
   constructor() {
     this.files = {};
     this.staging = {};
     this.commits = [];
   }
-  addFile(filename, contents) {
+  addFile(filename) {
+    const contents = fs.readFileSync(filename, "utf-8");
     this.files[filename] = contents;
     console.log(`files name: ${filename} and content: ${contents}`);
   }
@@ -41,14 +44,41 @@ class Repository {
     }
   }
 
+  generateHash(input) {
+    let hash = 0,
+      i,
+      chr;
+    if (input.length === 0) return hash;
+    for (i = 0; i < input.length; i++) {
+      chr = input.charCodeAt(i);
+      hash = (hash << 5) - hash + chr;
+      hash |= 0; // Convert to 32bit integer
+    }
+    return hash.toString();
+  }
+
   commit(message) {
+    if (Object.keys(this.staging).length === 0) {
+      throw new Error("No changes to commit");
+    }
     const snapshot = { ...this.staging };
-    this.commits.push({
-      message,
-      snapshot,
-      timestamp: new Date().toISOString(),
-    });
+    const timestamp = new Date().toISOString();
+    const hash = this.generateHash(
+      message + timestamp + JSON.stringify(snapshot)
+    );
+    this.commits.push({ hash, message, snapshot, timestamp });
     this.staging = {};
+
+    // Create the .minigit directory if it doesn't already exist
+    if (!fs.existsSync(".minigit")) {
+      fs.mkdirSync(".minigit");
+    }
+
+    // Write the commit to a file
+    fs.writeFileSync(
+      `.minigit/commit_${hash}.json`,
+      JSON.stringify({ hash, message, snapshot, timestamp }, null, 2)
+    );
   }
 
   getHistory() {
@@ -59,9 +89,9 @@ class Repository {
 }
 
 const repo = new Repository();
-repo.addFile("file1", "Hello World");
-repo.stageFile("file1");
+repo.addFile("test.txt");
+repo.stageFile("test.txt");
 repo.commit("Initial commit");
 console.log(repo.getHistory());
-console.log(repo.modifyFile("file1", "Everything is great"));
-console.log(repo.removeFile("file1"));
+console.log(repo.modifyFile("test.txt", "Everything is great"));
+console.log(repo.removeFile("test.txt"));

@@ -1,0 +1,8 @@
+{
+  "hash": "-1447069325",
+  "message": "Initial commit",
+  "snapshot": {
+    "test.txt": "hello World"
+  },
+  "timestamp": "2023-07-18T09:40:16.892Z"
+}
