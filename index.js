@@ -35,9 +35,19 @@ class Repository {
     console.log(`${filename} is staged`);
   }
 
+  unstageFile(filename) {
+    if (this.staging[filename]) {
+      delete this.staging[filename];
+    }
+  }
+
   commit(message) {
     const snapshot = { ...this.staging };
-    this.commits.push({ message, snapshot });
+    this.commits.push({
+      message,
+      snapshot,
+      timestamp: new Date().toISOString(),
+    });
     this.staging = {};
   }
 
