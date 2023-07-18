@@ -20,6 +20,13 @@ class Repository {
     }
   }
 
+  modifyFile(filename, newContents) {
+    if (!this.files[filename]) {
+      throw new Error(`File ${filename} does not exist`);
+    }
+    this.files[filename] = newContents;
+  }
+
   stageFile(filename) {
     if (!this.files[filename]) {
       throw new Error(`File ${filename} does not exist`);
@@ -46,4 +53,5 @@ repo.addFile("file1", "Hello World");
 repo.stageFile("file1");
 repo.commit("Initial commit");
 console.log(repo.getHistory());
+console.log(repo.modifyFile("file1", "Everything is great"));
 console.log(repo.removeFile("file1"));
